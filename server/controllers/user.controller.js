@@ -21,10 +21,10 @@ const signin = asyncHandler(async (req, res, next) => {
 
       res.status(200).json({ data: rest });
     } else {
-      return next(errorHandler(401, "Wrong Credential"));
+      return next(errorHandler(401, "Please provide a valid email address and password."));
     }
   } else {
-    return next(errorHandler(401, "Wrong Credential"));
+    return next(errorHandler(401, "Please provide a valid email address and password."));
   }
 });
 
