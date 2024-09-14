@@ -1,6 +1,8 @@
-import { Container, Card, Button } from "react-bootstrap";
+import { Container, Card, Button ,Spinner} from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import { useSelector } from "react-redux";
 const Hero = () => {
+  const {currentUser} = useSelector(state=>state.auth);
   return (
     <div className="py-5">
       <Container className="d-flex justify-content-center">
@@ -15,12 +17,12 @@ const Hero = () => {
           </Card.Body>
           <div className="d-flex">
             <LinkContainer to="/signin">
-              <Button variant="primary" className="me-3">
-                Sign In
+              <Button variant="primary" className="me-3" disabled={currentUser}>
+               Sign In
               </Button>
             </LinkContainer>
             <LinkContainer to="/signup">
-              <Button variant="secondary" className="me-3">
+              <Button variant="secondary" className="me-3" disabled={currentUser}>
                 Sign Up
               </Button>
             </LinkContainer>

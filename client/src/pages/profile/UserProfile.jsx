@@ -7,67 +7,70 @@ import {
   FormLabel,
   FormControl,
   FormText,
-  Row,
-  Col,
-  Alert,
-  Spinner
+  Alert,Spinner
 } from "react-bootstrap";
-import { Link ,useNavigate } from "react-router-dom";
 import { FormContainer } from "../../components/Layout";
 import { useState, useEffect } from "react";
-import axios from "axios";
-const SignUp = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const validationSchema = Yup.object({
-    firstname: Yup.string().required("Name is required"),
-    lastname: Yup.string().required("Last Name is required"),
-    email: Yup.string()
-      .email("Invalid email format")
-      .required("Email is required"),
-    password: Yup.string()
-      .min(8, "Password must be at least 8 characters")
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-      .matches(/[0-9]/, "Password must contain at least one digit")
-      .matches(
-        /[!@#$%^&*(),.?":{}|<>]/,
-        "Password must contain at least one special character"
-      )
-      .required("Password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm Password is required"),
-  });
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { updateProfile } from "../../Redux/slices/auth";
 
-  useEffect(() => {
-    return () => {
-      setError(null);
-      setSuccess(null);
-    };
-  }, []);
+const UserProfile=()=> {
+    const { currentUser } = useSelector((state) => state.auth);
+    const dispatch=useDispatch();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
-  const submitHandler = async (values) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await axios.post("/api/users/signup", values);
-      setSuccess("Sign up successful! Redirecting...");
-      setTimeout(() => navigate("/signin"), 2000);
-    } catch (error) {
-      error.response.data.message
-        ? setError(error.response.data.message)
-        : setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    const validationSchema = Yup.object({
+        firstname: Yup.string().required("Name is required"),
+        lastname: Yup.string().required("Last Name is required"),
+        email: Yup.string()
+          .email("Invalid email format")
+          .required("Email is required"),
+        password: Yup.string()
+          .min(8, "Password must be at least 8 characters")
+          .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+          .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+          .matches(/[0-9]/, "Password must contain at least one digit")
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password must contain at least one special character"
+          )
+          .required("Password is required"),
+        confirmPassword: Yup.string()
+          .oneOf([Yup.ref("password"), null], "Passwords must match")
+          .required("Confirm Password is required"),
+      });
+    
+      useEffect(() => {
+        return () => {
+          setError(null);
+          setSuccess(null);
+        };
+      }, []);
+    
+      const submitHandler = async (values) => {
+        setLoading(true);
+        setError(null);
+        try {
+          const result = await dispatch(updateProfile(values));
+          if (!result.error) {
+            setSuccess("Update user Profile successful!");
+            setTimeout(() => setSuccess(null), 2000);
+          }else{
+            setError(result.payload.message || "update failed. Please try again.");
+          }
+        } catch (error) {
+          console.log(error);
+          setError("An unexpected error occurred. Please try again.");
+        } finally {
+          setLoading(false);
+        }
+      };
   return (
     <FormContainer>
-      <h1>Sign Up Page</h1>
+      <h1>Update Profile</h1>
       {error && (
         <Alert variant="danger" className="my-3">
           {error}
@@ -80,18 +83,25 @@ const SignUp = () => {
       )}
       <Formik
         initialValues={{
-          firstname: "",
-          lastname: "",
-          email: "",
+          firstname:currentUser?.firstname|| "",
+          lastname: currentUser?.lastname||"",
+          email: currentUser?.email||"",
           password: "",
           confirmPassword: "",
         }}
         validationSchema={validationSchema}
-        onSubmit={(values) => submitHandler(values)}
+        onSubmit={(values) =>{
+            setLoading(true);
+             submitHandler(values);
+            }}
       >
-        {({ handleSubmit, errors, touched, isValid, dirty }) => (
+        {({ handleSubmit, errors, touched ,dirty,isValid}) => (
           <BootstrapForm
             onSubmit={handleSubmit}
+            onChange={() => {
+              setError(null);
+              setSuccess(null);
+            }}
             disabled={loading ? true : false}
           >
             <FormGroup className="my-2" controlId="firstname">
@@ -192,19 +202,15 @@ const SignUp = () => {
               className="mt-3"
               disabled={loading || !dirty || !isValid}
             >
-              {loading ? <Spinner animation="border" size="sm" />  : "Sign Up"}
+              {loading ? <Spinner animation="border" size="sm" />  : "Update Profile"}
             </Button>
 
-            <Row className="py-3">
-              <Col>
-                Already have an Account? <Link to="/signin">Sign In</Link>
-              </Col>
-            </Row>
+            
           </BootstrapForm>
         )}
       </Formik>
     </FormContainer>
-  );
-};
+  )
+}
 
-export default SignUp;
+export default UserProfile

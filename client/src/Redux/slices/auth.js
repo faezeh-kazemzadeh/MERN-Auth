@@ -13,7 +13,27 @@ export const signIn = createAsyncThunk(
       const response = await axios.post("/api/users/signin", credentials);
       return response.data;
     } catch (error) {
-      rejectWithValue(error);
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
+      } else {
+        return rejectWithValue(error.message);
+      }
+    }
+  }
+);
+
+export const updateProfile = createAsyncThunk(
+  "auth/profile",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await axios.put("/api/users/profile", credentials);
+      return response.data;
+    } catch (error) {    
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
+      } else {
+        return rejectWithValue(error.message);
+      }
     }
   }
 );
@@ -22,33 +42,17 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    // signInStart: (state) => {
-    //   state.isLoading = true;
-    // },
-    // signInSuccess: (state, action) => {
-    //   (state.currentUser = action.payload),
-    //     (state.error = null),
-    //     (state.isLoading = false);
-    // },
-    // signInFailure: (state, action) => {
-    //   (state.error = action.payload), (state.isLoading = false);
-    // },
-    // signOutStart: (state) => {
-    //   state.isLoading = true;
-    // },
-    // signOutSuccess: (state) => {
-    //   (state.currentUser = null),
-    //     (state.error = null),
-    //     (state.isLoading = false);
-    // },
-    // signOutFailure: (state, action) => {
-    //   (state.error = action.payload), (state.isLoading = false);
-    // },
+    signout:(state)=>{
+      state.currentUser=null,
+      state.error=null,
+      state.isLoading=false
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(signIn.pending, (state) => {
         state.isLoading = true;
+        state.error=null;
       })
       .addCase(signIn.fulfilled, (state, action) => {
         state.currentUser = action.payload;
@@ -58,16 +62,21 @@ const authSlice = createSlice({
         state.error = action.payload;
         state.currentUser=null;
         state.isLoading = false;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.currentUser = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLoading = false;
       });
   },
 });
 
-// export const {
-//   signInStart,
-//   signInSuccess,
-//   signInFailure,
-//   signOutStart,
-//   signOutSuccess,
-//   signOutFailure,
-// } = authSlice.actions;
+export const { signout } = authSlice.actions;
 export default authSlice.reducer;

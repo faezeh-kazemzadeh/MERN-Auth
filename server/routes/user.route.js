@@ -6,7 +6,7 @@ const router=express.Router();
 router.post('/',signin);
 router.post('/signin',signin);
 router.post('/signup',signup);
-router.get('/signout',signout);
-router.route('/profile').get(verifyToken,getUserProfile).post(verifyToken,updateUserProfile)
+router.post('/signout',signout);
+router.route('/profile').get(verifyToken,getUserProfile).put(verifyToken,updateUserProfile)
 
 export default router;

@@ -79,6 +79,12 @@ const validate = (user) => {
         "password.onlyLatinCharacters":
           "{#label} should contain only latin characters",
       }),
+      confirmPassword: Joi.string()
+      .valid(Joi.ref('password')) // Ensure it matches the password field
+      .required()
+      .messages({
+        "any.only": "Passwords do not match",
+      })
   });
   return schema.validate(user, { abortEarly: false });
 };

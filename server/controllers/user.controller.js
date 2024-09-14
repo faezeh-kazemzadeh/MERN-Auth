@@ -10,19 +10,15 @@ import { generateToken } from "../middleware/auth.middleware.js";
 const signin = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   const validUser = await User.findOne({ email });
-  if (validUser) {
-    const validPassword = await bcrypt.compare(password, validUser.password);
-    if (validPassword) {
+  if (validUser && (await bcrypt.compare(password, validUser.password))) {
       const token = generateToken(res, {
         _id: validUser._id,
         role: validUser.roles,
       });
       const { password: pass, ...rest } = validUser._doc;
 
-      res.status(200).json({ data: rest });
-    } else {
-      return next(errorHandler(401, "Please provide a valid email address and password."));
-    }
+      res.status(200).json(rest );
+   
   } else {
     return next(errorHandler(401, "Please provide a valid email address and password."));
   }
